@@ -4,9 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/renato-macedo/socket-tic-tac-toe/rooms"
-
-	"github.com/renato-macedo/socket-tic-tac-toe/socket"
+	"github.com/renato-macedo/socket-tic-tac-toe/controllers"
 )
 
 func main() {
@@ -20,6 +18,6 @@ func initRoutes() {
 	fs := http.FileServer(http.Dir("./client/dist"))
 	http.Handle("/", fs)
 
-	http.HandleFunc("/ws", socket.WebSocketHandler)
-	http.HandleFunc("/rooms", rooms.EndpointHandler)
+	http.HandleFunc("/ws", controllers.WsController)
+	http.HandleFunc("/rooms", controllers.HTTPController)
 }
