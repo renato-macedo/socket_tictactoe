@@ -22,7 +22,12 @@ function App() {
   const { playing } = useContext(GameContext);
   return (
     <Paper
-      style={{ width: '80%', margin: '0 auto', padding: '2% 5%' }}
+      style={{
+        width: '80vw',
+        height: '80vh',
+        margin: '0 auto',
+        padding: '2% 5%',
+      }}
       elevation={3}>
       <h1>Socket Tic Tac Toe</h1>
       {!playing ? <RoomList /> : <Game />}

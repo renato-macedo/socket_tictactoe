@@ -27,10 +27,21 @@ export default function FormDialog({
   roomNumber?: number;
 }) {
   const [text, setText] = useState('');
+  const [error, setError] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
   };
+
+  const handleClick = () => {
+    if (text) {
+      setError(false);
+      handleJoin(text);
+    } else {
+      setError(true);
+    }
+  };
+
   return (
     <div>
       <Dialog
@@ -44,6 +55,7 @@ export default function FormDialog({
             Before join the Room please type a nickname
           </DialogContentText>
           <TextField
+            error={error}
             autoFocus
             margin="dense"
             id="name"
@@ -51,13 +63,14 @@ export default function FormDialog({
             type="text"
             fullWidth
             onChange={handleChange}
+            helperText={error ? 'Nickname must be empty' : null}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={() => handleJoin(text)} color="primary">
+          <Button onClick={handleClick} color="primary">
             Join Room
           </Button>
         </DialogActions>

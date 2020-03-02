@@ -7,12 +7,10 @@
     "noImplicitAny": true,
     "module": "es6",
     "moduleResolution": "node",
-    "target": "es5",
+    "target": "ESNext",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
-    "jsx": "react",
+    "jsx": "react"
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }
