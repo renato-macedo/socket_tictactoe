@@ -9,6 +9,8 @@
     "moduleResolution": "node",
     "target": "ESNext",
     "allowSyntheticDefaultImports": true,
+    "incremental": true,
+    "experimentalDecorators": true,
     "allowJs": true,
     "jsx": "react"
   },
