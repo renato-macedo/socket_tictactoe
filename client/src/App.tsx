@@ -4,19 +4,6 @@ import Paper from '@material-ui/core/Paper';
 import { RoomList, Game } from './components';
 import GameState from './context/GameState';
 import GameContext from './context/GameContext';
-// const useStyles = makeStyles((theme: Theme) =>
-//   createStyles({
-//     root: {
-//       display: 'flex',
-//       flexWrap: 'wrap',
-//       '& > *': {
-//         margin: theme.spacing(1),
-//         width: theme.spacing(16),
-//         height: theme.spacing(16),
-//       },
-//     },
-//   }),
-// );
 
 function App() {
   const { playing } = useContext(GameContext);

@@ -24,16 +24,20 @@ export default function GameReducer(
 ): GameStateInterface {
   switch (action.type) {
     case CREATE_ROOM:
+      return {
+        ...state,
+        playing: true,
+        currentRoom: action.payload.room,
+        nickname: action.payload.nickname,
+        ws: action.payload.ws,
+      };
     case JOIN_ROOM:
       return {
         ...state,
         playing: true,
-        currentRoom: action.payload.room
-          ? action.payload.room
-          : state.currentRoom,
-        nickname: action.payload.nickname
-          ? action.payload.nickname
-          : state.nickname,
+        currentRoom: action.payload.room,
+        opponent: action.payload.opponent,
+        nickname: action.payload.nickname,
         ws: action.payload.ws,
       };
     case LEAVE_ROOM:

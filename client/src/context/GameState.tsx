@@ -29,11 +29,14 @@ function GameState(props: any) {
 
   function createRoom(nickname: string) {
     const ws = new WebSocket('ws://localhost:3000/ws');
+
+    // tell the server to create a room
     ws.onopen = event => {
       console.log('connected');
-      ws.send(JSON.stringify({ type: 'create', data: { nickname } }));
+      ws.send(JSON.stringify({ type: 'create', nickname }));
     };
 
+    // when server notifies that the room is created, update state
     ws.onmessage = (event: MessageEvent) => {
       const { type, data } = JSON.parse(event.data);
 
@@ -41,7 +44,7 @@ function GameState(props: any) {
         console.log(ws);
         dispatch({
           type: CREATE_ROOM,
-          payload: { room: { id: data.roomID, players: 1 }, nickname, ws },
+          payload: { room: { id: data, players: 1 }, nickname, ws },
         });
       }
     };
@@ -50,22 +53,31 @@ function GameState(props: any) {
   function joinRoom(nickname: string, room: Room) {
     const ws = new WebSocket('ws://localhost:3000/ws');
     console.log(room);
+
+    // tell the server that the player wants to join a room
     ws.onopen = event => {
       console.log('connected');
       ws.send(
         JSON.stringify({
           type: 'join',
-          data: { nickname, roomID: room.id },
+          id: room.id,
+          nickname,
         }),
       );
     };
 
+    // when server notifies that the player joined, update state
     ws.onmessage = (event: MessageEvent) => {
       const { type, data } = JSON.parse(event.data);
       if (type === 'joined') {
         dispatch({
           type: JOIN_ROOM,
-          payload: { room: { id: data.roomID, players: 2 }, nickname, ws },
+          payload: {
+            room: { id: room.id, players: 2 },
+            nickname,
+            opponent: data,
+            ws,
+          },
         });
       }
     };

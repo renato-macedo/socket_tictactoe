@@ -17,13 +17,12 @@ export default function Game() {
     setAlert(false);
   }
   useEffect(() => {
-    console.log('Hello', ws);
     if (ws) {
       console.log('ok');
       ws.onmessage = (event: MessageEvent) => {
         const { type, data } = JSON.parse(event.data);
         if (type == 'newplayer') {
-          newPlayer(data.nickname);
+          newPlayer(data);
           setAlert(true);
         }
       };

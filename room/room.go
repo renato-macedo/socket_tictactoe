@@ -4,73 +4,63 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/renato-macedo/socket-tic-tac-toe/socket"
+	"github.com/renato-macedo/socket-tic-tac-toe/game"
 )
-
-// Rooms map Database
-var Rooms = make(map[string][]Player)
 
 // Room struct
 type Room struct {
-	ID      string   `json:"id"`
-	Players []Player `json:"players"`
-}
-
-// Player struc
-type Player struct {
-	ID       string
-	Nickname string
-	Conn     *websocket.Conn `json:"-"`
+	ID    string `json:"id"`
+	Host  string `json:"host"`
+	Guest string `json:"guest"`
 }
 
 // GetRooms return all active rooms
 func GetRooms() []Room {
 
-	roomSlice := make([]Room, 0)
-	if len(Rooms) > 0 {
-		for key, value := range Rooms {
+	rooms := make([]Room, 0)
+	if len(game.Games) > 0 {
 
-			roomSlice = append(roomSlice, Room{ID: key, Players: value})
+		var guest string
+		for key, value := range game.Games {
+			host := value.Host.Nickname
+			if value.Guest != nil {
+				guest = value.Guest.Nickname
+			}
+			fmt.Println(key, value)
+			rooms = append(rooms, Room{ID: key, Host: host, Guest: guest})
 		}
 	}
 
-	return roomSlice
+	return rooms
 
 }
 
 // CreateRoom create a room with a player
-func CreateRoom(conn *websocket.Conn, nickname string) socket.Payload {
+func CreateRoom(conn *websocket.Conn, hostNickname string) string {
 	// create player
-	p := Player{Nickname: nickname, Conn: conn}
 
-	// add player to a slice
-	players := make([]Player, 1)
-	players[0] = p
+	host := game.NewPlayer(conn, hostNickname)
 
-	// create room ID
-	roomID := uuid.Must(uuid.NewV4()).String()
+	g := game.NewGame(host)
 
-	// add players to the room
-	Rooms[roomID] = players
+	game.Games[g.ID] = g
 
-	// return info
-	return socket.Payload{Nickname: nickname, RoomID: roomID}
+	return g.ID
 }
 
 // JoinRoom join a room
-func JoinRoom(conn *websocket.Conn, data socket.Payload) bool {
+func JoinRoom(conn *websocket.Conn, roomID, guestNickname string) bool {
 
-	fmt.Println("data: ", data)
-	players := Rooms[data.RoomID]
-	fmt.Println(players)
-	if len(players) == 1 {
-		player := Player{Nickname: data.Nickname, Conn: conn}
-		players = append(players, player)
-		Rooms[data.RoomID] = players
+	gameroom := game.Games[roomID]
+
+	if gameroom.Guest == nil {
+
+		guest := game.NewPlayer(conn, guestNickname)
+		gameroom.Guest = guest
 		return true
 	}
+
 	log.Println("room is full")
 	return false
 

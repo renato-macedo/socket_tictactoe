@@ -7,8 +7,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/renato-macedo/socket-tic-tac-toe/game"
+	"github.com/renato-macedo/socket-tic-tac-toe/messages"
 	"github.com/renato-macedo/socket-tic-tac-toe/room"
-	"github.com/renato-macedo/socket-tic-tac-toe/socket"
 )
 
 // Error is a commom interface to error responses
@@ -17,34 +18,43 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 // Reader handle all websocket connections
 func reader(conn *websocket.Conn) {
 	for {
 		// new message
-		var msg socket.Message
-		err := conn.ReadJSON(&msg)
+
+		message := map[string]string{}
+		err := conn.ReadJSON(&message)
 		if err != nil {
 			log.Printf("error: %v", err)
 			// TODO handle this
 			break
 		}
 
-		switch msg.Type {
+		fmt.Println("message", message)
+		switch message["type"] {
+
 		case "create":
-			payload := room.CreateRoom(conn, msg.Data.Nickname)
-			conn.WriteJSON(socket.Message{Type: "created", Data: payload})
+			roomID := room.CreateRoom(conn, message["nickname"])
+			conn.WriteJSON(messages.Default{Type: "created", Data: roomID})
 
 		case "join":
-			fmt.Println("data:", msg.Data)
-			success := room.JoinRoom(conn, msg.Data)
+
+			success := room.JoinRoom(conn, message["id"], message["nickname"])
 			if success == true {
-				opponent := room.Rooms[msg.Data.RoomID][0]
-				conn.WriteJSON(socket.Message{Type: "joined", Data: socket.Payload{Nickname: opponent.Nickname, RoomID: msg.Data.RoomID}})
 
-				fmt.Println(room.Rooms)
+				opponent := game.Games[message["id"]].Host
 
-				fmt.Println("opponent", opponent)
-				opponent.Conn.WriteJSON(socket.Message{Type: "newplayer", Data: msg.Data})
+				// tell the player who is the host
+				conn.WriteJSON(messages.Default{Type: "joined", Data: opponent.Nickname})
+
+				// tell the host that a player joined the game
+				opponent.Conn.WriteJSON(messages.Default{Type: "newplayer", Data: message["nickname"]})
 			}
 
 		}
@@ -59,15 +69,14 @@ func WsController(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Dude, you are using http...")
 		return
 	}
-	socket.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	ws, err := socket.Upgrader.Upgrade(w, r, nil)
-
+	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	}
 
-	reader(ws)
+	go reader(ws)
 }
 
 // HTTPController  well, handle all request to the /rooms endpoint
@@ -77,7 +86,7 @@ func HTTPController(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		roomSlice := room.GetRooms()
-
+		fmt.Println("rooms: ", roomSlice)
 		jsResp, err := json.Marshal(roomSlice)
 		if err != nil {
 			panic(err)
@@ -88,13 +97,7 @@ func HTTPController(w http.ResponseWriter, r *http.Request) {
 		w.Write(jsResp)
 
 	default:
-		e := Error{http.StatusBadRequest, "Invalid Method"}
-		jsResp, err := json.Marshal(e)
-		if err != nil {
-			panic(err)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(jsResp)
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
