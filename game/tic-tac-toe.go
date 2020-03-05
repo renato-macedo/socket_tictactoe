@@ -1,8 +1,11 @@
 package game
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/websocket"
+	"github.com/renato-macedo/socket-tic-tac-toe/messages"
 )
 
 // Games map Database
@@ -15,53 +18,48 @@ type Game struct {
 	Guest *Player `json:"guest"`
 }
 
-// Player struc
-type Player struct {
-	ID       string
-	Nickname string
-	Conn     *websocket.Conn `json:"-"`
-}
-
-// NewGame create a new game with a given host player
-func NewGame(host *Player) *Game {
-	id := uuid.Must(uuid.NewV4()).String()
-	game := &Game{ID: id, Host: host}
-
-	return game
-
-}
-
-// NewPlayer creates a player with a given nickname
-func NewPlayer(conn *websocket.Conn, nickname string) *Player {
+// CreateGame create a game with a player
+func CreateGame(host *Player) string {
 
 	id := uuid.Must(uuid.NewV4()).String()
-	player := &Player{ID: id, Conn: conn, Nickname: nickname}
-
-	return player
+	game := Game{ID: id, Host: host}
+	Games[game.ID] = &game
+	log.Println("game created:", game.ID)
+	return game.ID
 }
 
-// CalculateWinner tells who won the game
-func CalculateWinner(squares []string) (hasWinner bool, winner string) {
-	lines := [8][3]int{
-		{0, 1, 2},
-		{3, 4, 5},
-		{6, 7, 8},
-		{0, 3, 6},
-		{1, 4, 7},
-		{2, 5, 8},
-		{0, 4, 8},
-		{2, 4, 6},
+// JoinGame join a game
+func JoinGame(gameID string, guest *Player) (success bool) {
+
+	gameroom := Games[gameID]
+	log.Println("game:", gameroom)
+	if gameroom != nil && gameroom.Guest == nil {
+		gameroom.Guest = guest
+		return true
 	}
+	log.Println("room is full or do not exist")
+	return false
 
-	for _, value := range lines {
-		a := value[0]
-		b := value[1]
-		c := value[2]
+}
 
-		if squares[a] == squares[b] && squares[a] == squares[c] {
-			return true, squares[a]
+// Get return all games Rooms return all active rooms
+func Get() []messages.Room {
+
+	rooms := make([]messages.Room, 0)
+	if len(Games) > 0 {
+
+		numberOfPlayers := 1
+		for key, value := range Games {
+
+			host := value.Host.Nickname
+			if value.Guest != nil {
+				numberOfPlayers++
+			}
+			fmt.Println(key, value)
+			rooms = append(rooms, messages.Room{ID: key, Title: host + "'s game", NumberOfPlayers: numberOfPlayers})
 		}
 	}
 
-	return false, ""
+	return rooms
+
 }

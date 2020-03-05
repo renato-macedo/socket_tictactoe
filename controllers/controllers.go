@@ -8,8 +8,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/renato-macedo/socket-tic-tac-toe/game"
-	"github.com/renato-macedo/socket-tic-tac-toe/messages"
-	"github.com/renato-macedo/socket-tic-tac-toe/room"
 )
 
 // Error is a commom interface to error responses
@@ -23,45 +21,6 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// Reader handle all websocket connections
-func reader(conn *websocket.Conn) {
-	for {
-		// new message
-
-		message := map[string]string{}
-		err := conn.ReadJSON(&message)
-		if err != nil {
-			log.Printf("error: %v", err)
-			// TODO handle this
-			break
-		}
-
-		fmt.Println("message", message)
-		switch message["type"] {
-
-		case "create":
-			roomID := room.CreateRoom(conn, message["nickname"])
-			conn.WriteJSON(messages.Default{Type: "created", Data: roomID})
-
-		case "join":
-
-			success := room.JoinRoom(conn, message["id"], message["nickname"])
-			if success == true {
-
-				opponent := game.Games[message["id"]].Host
-
-				// tell the player who is the host
-				conn.WriteJSON(messages.Default{Type: "joined", Data: opponent.Nickname})
-
-				// tell the host that a player joined the game
-				opponent.Conn.WriteJSON(messages.Default{Type: "newplayer", Data: message["nickname"]})
-			}
-
-		}
-
-	}
-}
-
 // WsController handle all websocket requests
 func WsController(w http.ResponseWriter, r *http.Request) {
 
@@ -69,6 +28,7 @@ func WsController(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Dude, you are using http...")
 		return
 	}
+
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -76,7 +36,10 @@ func WsController(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	go reader(ws)
+	client := game.NewPlayer(ws)
+
+	//go client.Writer()
+	go client.Reader()
 }
 
 // HTTPController  well, handle all request to the /rooms endpoint
@@ -85,9 +48,10 @@ func HTTPController(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		roomSlice := room.GetRooms()
-		fmt.Println("rooms: ", roomSlice)
-		jsResp, err := json.Marshal(roomSlice)
+
+		rooms := game.Get()
+		fmt.Println("rooms: ", rooms)
+		jsResp, err := json.Marshal(rooms)
 		if err != nil {
 			panic(err)
 		}

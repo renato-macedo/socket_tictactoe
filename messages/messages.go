@@ -25,3 +25,10 @@ type Move struct {
 	Player   string `json:"player"`
 	Position int    `json:"position"`
 }
+
+// Room data transfer object
+type Room struct {
+	ID              string `json:"id"`
+	Title           string `json:"title"`
+	NumberOfPlayers int    `json:"num_players"`
+}

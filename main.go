@@ -15,7 +15,7 @@ func main() {
 }
 
 func initRoutes() {
-	fs := http.FileServer(http.Dir("./client/dist"))
+	fs := http.FileServer(http.Dir("./web/dist"))
 	http.Handle("/", fs)
 
 	http.HandleFunc("/ws", controllers.WsController)
