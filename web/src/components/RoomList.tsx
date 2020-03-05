@@ -57,9 +57,9 @@ export default function RoomList() {
               <ListItem
                 key={room.id}
                 button
-                selected={selected?.num === room.num}
+                selected={selected?.id === room.id}
                 onClick={() => handleSelect(room)}>
-                <ListItemText primary={`Room ${room.num}`} />
+                <ListItemText primary={`${room.title}`} />
               </ListItem>
             </>
           ))}

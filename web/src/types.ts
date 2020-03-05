@@ -25,8 +25,8 @@ export interface GameStateInterface {
 
 export interface Room {
   id: string;
-  num?: number;
-  players: number;
+  title: string;
+  num_players: number;
 }
 
 // Events
