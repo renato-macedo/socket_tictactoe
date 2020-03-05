@@ -8,6 +8,8 @@ import {
   GET_ROOMS,
   GameContextInterface,
   PLAYER_JOINED,
+  PLAYER_LEFT,
+
 } from '../types';
 import GameReducer from './GameReducer';
 import GameContext from './GameContext';
@@ -91,6 +93,13 @@ function GameState(props: any) {
     });
   }
 
+  function removePlayer() {
+    dispatch({
+      type: PLAYER_LEFT,
+      payload: null
+    })
+  }
+
   async function getRooms() {
     const response = await fetch('http://localhost:3000/rooms');
 
@@ -119,6 +128,7 @@ function GameState(props: any) {
         error: state.error,
         ws: state.ws,
         opponent: state.opponent,
+        removePlayer,
       }}>
       {props.children}
     </GameContext.Provider>

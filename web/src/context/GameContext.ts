@@ -8,10 +8,12 @@ const GameContext = createContext<GameContextInterface>({
   opponent: null,
   nickname: '',
   error: '',
-  joinRoom: () => {},
-  leaveRoom: () => {},
-  getRooms: () => {},
-  createRoom: () => {},
+  joinRoom: () => { },
+  leaveRoom: () => { },
+  getRooms: () => { },
+  createRoom: () => { },
+  removePlayer: () => { },
+  newPlayer: () => { },
   ws: null,
 });
 

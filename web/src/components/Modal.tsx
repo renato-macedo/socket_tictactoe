@@ -18,13 +18,13 @@ const Transition = React.forwardRef<unknown, TransitionProps>(
 export default function FormDialog({
   visible,
   handleClose,
-  roomNumber,
+  roomTitle,
   handleJoin,
 }: {
   visible: boolean;
   handleClose: () => void;
   handleJoin: (text: string) => void;
-  roomNumber?: number;
+  roomTitle?: string;
 }) {
   const [text, setText] = useState('');
   const [error, setError] = useState(false);
@@ -49,7 +49,7 @@ export default function FormDialog({
         TransitionComponent={Transition}
         onClose={handleClose}
         aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Join Room {roomNumber}</DialogTitle>
+        <DialogTitle id="form-dialog-title">Join {roomTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Before join the Room please type a nickname

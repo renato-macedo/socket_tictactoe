@@ -70,7 +70,7 @@ export default function RoomList() {
       <Modal
         visible={visible}
         handleClose={handleClose}
-        roomNumber={selected?.num}
+        roomTitle={selected?.title}
         handleJoin={(text: string) => handleJoin(text)}
       />
     </>

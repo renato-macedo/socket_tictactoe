@@ -10,7 +10,8 @@ export interface GameContextInterface {
   joinRoom: (nickname: string, room: Room) => void;
   leaveRoom: () => void;
   getRooms: () => void;
-  newPlayer: () => void;
+  newPlayer: (nickname: string) => void;
+  removePlayer: () => void
 }
 
 export interface GameStateInterface {
@@ -36,4 +37,5 @@ export const LEAVE_ROOM = 'LEAVE_ROOM';
 export const SET_CURRENT_ROOM = 'SET_CURRENT_ROOM';
 export const GET_ROOMS = 'GET_ROOMS';
 export const PLAYER_JOINED = 'PLAYER_JOINED';
+export const PLAYER_LEFT = 'PLAYER_LEFT'
 export const ERROR = 'ERROR';

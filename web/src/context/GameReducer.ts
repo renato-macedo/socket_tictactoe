@@ -6,6 +6,7 @@ import {
   CREATE_ROOM,
   GET_ROOMS,
   PLAYER_JOINED,
+  PLAYER_LEFT,
 } from '../types';
 
 interface Payload {
@@ -59,6 +60,12 @@ export default function GameReducer(
         ...state,
         opponent: action.payload,
       };
+    case PLAYER_LEFT: {
+      return {
+        ...state,
+        opponent: null
+      }
+    }
     default:
       return state;
   }
