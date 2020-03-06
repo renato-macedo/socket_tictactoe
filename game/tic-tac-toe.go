@@ -22,8 +22,9 @@ type Game struct {
 func CreateGame(host *Player) string {
 
 	id := uuid.Must(uuid.NewV4()).String()
-	game := Game{ID: id, Host: host}
-	Games[game.ID] = &game
+	game := &Game{ID: id, Host: host}
+	Games[game.ID] = game
+	host.Game = game
 	log.Println("game created:", game.ID)
 	return game.ID
 }
@@ -32,9 +33,10 @@ func CreateGame(host *Player) string {
 func JoinGame(gameID string, guest *Player) (success bool) {
 
 	gameroom := Games[gameID]
-	log.Println("game:", gameroom)
+
 	if gameroom != nil && gameroom.Guest == nil {
 		gameroom.Guest = guest
+		guest.Game = gameroom
 		return true
 	}
 	log.Println("room is full or do not exist")
@@ -61,5 +63,16 @@ func Get() []messages.Room {
 	}
 
 	return rooms
+}
 
+// Aux function delete later
+func Aux() []Game {
+	games := make([]Game, 0)
+
+	if len(Games) > 0 {
+		for key, value := range Games {
+			games = append(games, Game{ID: key, Guest: value.Guest, Host: value.Host})
+		}
+	}
+	return games
 }
