@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gofrs/uuid"
@@ -31,7 +30,6 @@ func NewPlayer(conn *websocket.Conn) *Player {
 func (p *Player) Reader() {
 	log.Println("starting to read")
 	defer func() {
-		log.Println("fim da função")
 		p.Conn.Close()
 
 	}()
@@ -47,14 +45,12 @@ func (p *Player) Reader() {
 			log.Printf("player: %v game: %v \n", p.Nickname, p.Game)
 
 			if p.Game != nil {
-				// log.Println("playerID", p.ID)
-				// log.Println("hostID", p.Game.Host.ID)
-				// log.Println("guestID", p.Game.Guest.ID)
+
 				// if the player is the host, tell the guest the host left the game
 				if p.ID == p.Game.Host.ID {
 					// notify the guest
 					if p.Game.Guest != nil {
-						p.Game.Guest.Conn.WriteJSON(messages.Default{Type: "hs_left", Data: "Your adversary left the game, You are the host now"})
+						p.Game.Guest.Conn.WriteJSON(messages.Default{Type: messages.HOST_LEFT, Data: "Your adversary left the game, You are the host now"})
 						p.Game.Host = p.Game.Guest
 						p.Game.Guest = nil
 					} else {
@@ -65,7 +61,7 @@ func (p *Player) Reader() {
 
 				} else {
 					// otherwise tell the host the guest left
-					p.Game.Host.Conn.WriteJSON(messages.Default{Type: "gs_left", Data: "Your adversary left the game"})
+					p.Game.Host.Conn.WriteJSON(messages.Default{Type: messages.GUEST_LEFT, Data: "Your adversary left the game"})
 					p.Game.Guest = nil
 				}
 			}
@@ -73,16 +69,15 @@ func (p *Player) Reader() {
 
 		}
 
-		fmt.Println("message", message)
 		switch message["type"] {
 
-		case "create":
+		case messages.CREATE:
 			nickname := message["nickname"]
 			p.Nickname = nickname
 			gameID := CreateGame(p)
-			p.Conn.WriteJSON(messages.Default{Type: "created", Data: gameID})
+			p.Conn.WriteJSON(messages.Default{Type: messages.CREATED, Data: gameID})
 
-		case "join":
+		case messages.JOIN:
 			nickname := message["nickname"]
 			log.Println("player trying to join", nickname)
 			p.Nickname = nickname
@@ -92,9 +87,9 @@ func (p *Player) Reader() {
 				opponent := Games[message["id"]].Host
 
 				// tell the player who is the host
-				p.Conn.WriteJSON(messages.Default{Type: "joined", Data: opponent.Nickname})
+				p.Conn.WriteJSON(messages.Default{Type: messages.JOINED, Data: opponent.Nickname})
 				// tell the host that a player joined the game
-				opponent.Conn.WriteJSON(messages.Default{Type: "newplayer", Data: p.Nickname})
+				opponent.Conn.WriteJSON(messages.Default{Type: messages.NEW_PLAYER, Data: p.Nickname})
 			}
 
 		}
