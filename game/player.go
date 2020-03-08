@@ -2,6 +2,7 @@ package game
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -86,12 +87,38 @@ func (p *Player) Reader() {
 
 				opponent := Games[message["id"]].Host
 
-				// tell the player who is the host
-				p.Conn.WriteJSON(messages.Default{Type: messages.JOINED, Data: opponent.Nickname})
+				// tell the guest who is the host
+				p.Game.notifyGuest(messages.JOINED, opponent.Nickname)
+				//p.Conn.WriteJSON(messages.Default{Type: messages.JOINED, Data: opponent.Nickname})
 				// tell the host that a player joined the game
-				opponent.Conn.WriteJSON(messages.Default{Type: messages.NEW_PLAYER, Data: p.Nickname})
+				p.Game.notifyHost(messages.NEW_PLAYER, p.Nickname)
+				//opponent.Conn.WriteJSON(messages.Default{Type: messages.NEW_PLAYER, Data: p.Nickname})
+			}
+		case messages.MOVE:
+			index, err := strconv.Atoi(message["square"])
+			if err != nil {
+				log.Printf("error %v", err)
+				return
+			}
+			player := message["player"]
+			log.Println("player", player)
+			if player == "X" {
+
+				p.Game.Guest.Conn.WriteJSON(messages.Move{Type: messages.MOVE, Position: index, Player: player})
+			} else {
+				p.Game.Host.Conn.WriteJSON(messages.Move{Type: messages.MOVE, Position: index, Player: player})
 			}
 
+			hasWinner, draw, winner := p.Game.calculateWinner(index, player)
+			if draw {
+				p.Game.notifyAll(messages.DRAW, "")
+				// p.Game.Guest.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
+				// p.Game.Host.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
+			} else if hasWinner {
+				p.Game.notifyAll(messages.GAME_OVER, winner)
+				// p.Game.Guest.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
+				// p.Game.Host.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
+			}
 		}
 
 	}

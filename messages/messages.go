@@ -23,7 +23,7 @@ type JoinRoom struct {
 type Move struct {
 	Type     string `json:"type"`
 	Player   string `json:"player"`
-	Position int    `json:"position"`
+	Position int    `json:"data"`
 }
 
 // Room data transfer object
@@ -60,4 +60,10 @@ const (
 
 	// HOST_LEFT host left the game
 	HOST_LEFT string = "hs_left"
+
+	// DRAW draw
+	DRAW string = "draw"
+
+	// GAME_OVER game over
+	GAME_OVER = "gameover"
 )

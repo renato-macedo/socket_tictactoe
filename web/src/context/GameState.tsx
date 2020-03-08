@@ -9,6 +9,8 @@ import {
   GameContextInterface,
   PLAYER_JOINED,
   PLAYER_LEFT,
+  MOVE,
+  START_TURN,
 
 } from '../types';
 import GameReducer from './GameReducer';
@@ -22,6 +24,8 @@ function GameState(props: any) {
     rooms: [],
     nickname: '',
     error: '',
+    waiting: false,
+    isHost: false,
     currentRoom: null,
     opponent: null,
     ws: null,
@@ -34,7 +38,7 @@ function GameState(props: any) {
 
     // tell the server to create a room
     ws.onopen = event => {
-      console.log('connected');
+
       ws.send(JSON.stringify({ type: 'create', nickname }));
     };
 
@@ -43,7 +47,7 @@ function GameState(props: any) {
       const { type, data } = JSON.parse(event.data);
 
       if (type === 'created') {
-        console.log(ws);
+
         dispatch({
           type: CREATE_ROOM,
           payload: { room: { id: data, players: 1 }, nickname, ws },
@@ -54,7 +58,6 @@ function GameState(props: any) {
 
   function joinRoom(nickname: string, room: Room) {
     const ws = new WebSocket('ws://localhost:3000/ws');
-    console.log(room);
 
     // tell the server that the player wants to join a room
     ws.onopen = event => {
@@ -100,6 +103,23 @@ function GameState(props: any) {
     })
   }
 
+  function makeAMove(square: number, player: string) {
+    if (state.ws) {
+      dispatch({
+        type: MOVE,
+        payload: true // set waiting true
+      })
+      state.ws.send(JSON.stringify({ type: 'move', square: square.toString(), player }))
+    }
+  }
+
+  function startTurn() {
+    dispatch({
+      type: START_TURN,
+      payload: false // set waiting false
+    })
+  }
+
   async function getRooms() {
     const response = await fetch('http://localhost:3000/rooms');
 
@@ -125,10 +145,14 @@ function GameState(props: any) {
         leaveRoom,
         getRooms,
         newPlayer,
+        waiting: state.waiting,
         error: state.error,
         ws: state.ws,
         opponent: state.opponent,
         removePlayer,
+        isHost: state.isHost,
+        makeAMove,
+        startTurn
       }}>
       {props.children}
     </GameContext.Provider>

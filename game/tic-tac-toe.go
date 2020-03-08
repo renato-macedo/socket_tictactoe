@@ -13,9 +13,10 @@ var Games = make(map[string]*Game)
 
 // Game struct
 type Game struct {
-	ID    string  `json:"id"`
-	Host  *Player `json:"host"`
-	Guest *Player `json:"guest"`
+	ID      string  `json:"id"`
+	Host    *Player `json:"host"`
+	Guest   *Player `json:"guest"`
+	SQUARES [9]string
 }
 
 // CreateGame create a game with a player

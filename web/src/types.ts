@@ -6,12 +6,16 @@ export interface GameContextInterface {
   opponent: string | null;
   ws: WebSocket | null;
   error: string;
+  waiting: boolean,
+  isHost: boolean,
   createRoom: (nickname: string) => void;
   joinRoom: (nickname: string, room: Room) => void;
   leaveRoom: () => void;
   getRooms: () => void;
   newPlayer: (nickname: string) => void;
-  removePlayer: () => void
+  removePlayer: () => void;
+  makeAMove: (square: number, who: string) => void;
+  startTurn: () => void
 }
 
 export interface GameStateInterface {
@@ -19,6 +23,8 @@ export interface GameStateInterface {
   rooms: Room[];
   error: string;
   nickname: string;
+  waiting: boolean;
+  isHost: boolean;
   opponent: string | null;
   currentRoom: Room | null;
   ws: WebSocket | null;
@@ -39,3 +45,5 @@ export const GET_ROOMS = 'GET_ROOMS';
 export const PLAYER_JOINED = 'PLAYER_JOINED';
 export const PLAYER_LEFT = 'PLAYER_LEFT'
 export const ERROR = 'ERROR';
+export const MOVE = 'MOVE';
+export const START_TURN = 'START_TURN'

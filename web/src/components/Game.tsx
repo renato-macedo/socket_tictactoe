@@ -1,5 +1,4 @@
 import React, {
-  PropsWithChildren,
   useState,
   useEffect,
   useContext,
@@ -17,7 +16,7 @@ export default function Game() {
   useEffect(() => {
     if (ws) {
       console.log('ok');
-      ws.onmessage = (event: MessageEvent) => {
+      ws.addEventListener('message', event => {
         const { type, data } = JSON.parse(event.data);
         switch (type) {
           case 'newplayer':
@@ -33,7 +32,7 @@ export default function Game() {
           default:
             break;
         }
-      };
+      })
     }
   }, []);
   return (
