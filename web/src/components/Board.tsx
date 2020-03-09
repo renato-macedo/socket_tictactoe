@@ -37,7 +37,7 @@ const reducer: Reducer<BoardState, Action> = (state: BoardState, action: Action)
 
 export default function Board(props: any) {
   const { waiting, makeAMove, isHost, ws, startTurn, } = useContext(GameContext)
-  //const [state, setState] = useState<BoardState>()
+
 
   const [state, dispatch] = useReducer(reducer, initialState)
 

@@ -33,7 +33,7 @@ export default function GameReducer(
         currentRoom: action.payload.room,
         nickname: action.payload.nickname,
         ws: action.payload.ws,
-        waiting: false,
+        waiting: true,
         isHost: true
       };
     case JOIN_ROOM:
@@ -62,6 +62,7 @@ export default function GameReducer(
       return {
         ...state,
         opponent: action.payload,
+        waiting: false
       };
     case PLAYER_LEFT:
       return {

@@ -27,24 +27,24 @@ func NewPlayer(conn *websocket.Conn) *Player {
 	return player
 }
 
-// Reader reads messages
+// Reader receive and send messages
 func (p *Player) Reader() {
 	log.Println("starting to read")
+	// close the connection after
 	defer func() {
 		p.Conn.Close()
 
 	}()
+
+	// start to read messages
 	for {
 
 		// new message
 		message := map[string]string{}
-		log.Printf("%v", p.Game)
+
 		err := p.Conn.ReadJSON(&message)
 		log.Println(err)
 		if err != nil {
-			log.Printf("hmmmm: %v", err)
-			log.Printf("player: %v game: %v \n", p.Nickname, p.Game)
-
 			if p.Game != nil {
 
 				// if the player is the host, tell the guest the host left the game
@@ -71,29 +71,17 @@ func (p *Player) Reader() {
 		}
 
 		switch message["type"] {
-
 		case messages.CREATE:
 			nickname := message["nickname"]
-			p.Nickname = nickname
-			gameID := CreateGame(p)
-			p.Conn.WriteJSON(messages.Default{Type: messages.CREATED, Data: gameID})
+			onCreate(p, nickname)
+			break
 
 		case messages.JOIN:
 			nickname := message["nickname"]
-			log.Println("player trying to join", nickname)
-			p.Nickname = nickname
-			success := JoinGame(message["id"], p)
-			if success == true {
+			roomID := message["id"]
+			onJoin(p, nickname, roomID)
+			break
 
-				opponent := Games[message["id"]].Host
-
-				// tell the guest who is the host
-				p.Game.notifyGuest(messages.JOINED, opponent.Nickname)
-				//p.Conn.WriteJSON(messages.Default{Type: messages.JOINED, Data: opponent.Nickname})
-				// tell the host that a player joined the game
-				p.Game.notifyHost(messages.NEW_PLAYER, p.Nickname)
-				//opponent.Conn.WriteJSON(messages.Default{Type: messages.NEW_PLAYER, Data: p.Nickname})
-			}
 		case messages.MOVE:
 			index, err := strconv.Atoi(message["square"])
 			if err != nil {
@@ -101,24 +89,8 @@ func (p *Player) Reader() {
 				return
 			}
 			player := message["player"]
-			log.Println("player", player)
-			if player == "X" {
-
-				p.Game.Guest.Conn.WriteJSON(messages.Move{Type: messages.MOVE, Position: index, Player: player})
-			} else {
-				p.Game.Host.Conn.WriteJSON(messages.Move{Type: messages.MOVE, Position: index, Player: player})
-			}
-
-			hasWinner, draw, winner := p.Game.calculateWinner(index, player)
-			if draw {
-				p.Game.notifyAll(messages.DRAW, "")
-				// p.Game.Guest.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
-				// p.Game.Host.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
-			} else if hasWinner {
-				p.Game.notifyAll(messages.GAME_OVER, winner)
-				// p.Game.Guest.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
-				// p.Game.Host.Conn.WriteJSON(messages.Default{Type: messages.GAME_OVER, Data: winner})
-			}
+			onMove(p, index, player)
+			break
 		}
 
 	}

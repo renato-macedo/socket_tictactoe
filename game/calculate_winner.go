@@ -1,15 +1,10 @@
 package game
 
-import "log"
-
 // CalculateWinner tells who won the game
 func (g *Game) calculateWinner(index int, XO string) (hasWinner bool, draw bool, winner string) {
 
 	g.SQUARES[index] = XO
 
-	// if g.checkDraw() {
-	// 	return false, true, ""
-	// }
 	lines := [8][3]int{
 		{0, 1, 2},
 		{3, 4, 5},
@@ -25,7 +20,7 @@ func (g *Game) calculateWinner(index int, XO string) (hasWinner bool, draw bool,
 		a := value[0]
 		b := value[1]
 		c := value[2]
-		log.Printf("%v: %v %v: %v %v: %v", a, g.SQUARES[a], b, g.SQUARES[b], c, g.SQUARES[c])
+		// log.Printf("%v: %v %v: %v %v: %v", a, g.SQUARES[a], b, g.SQUARES[b], c, g.SQUARES[c])
 		if g.SQUARES[a] != "" && g.SQUARES[a] == g.SQUARES[b] && g.SQUARES[a] == g.SQUARES[c] {
 			return true, false, g.SQUARES[a]
 		}
