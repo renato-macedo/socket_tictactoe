@@ -7,8 +7,7 @@ import {
   GET_ROOMS,
   PLAYER_JOINED,
   PLAYER_LEFT,
-  MOVE,
-  START_TURN,
+  SET_TURN,
 } from '../types';
 
 interface Payload {
@@ -33,7 +32,7 @@ export default function GameReducer(
         currentRoom: action.payload.room,
         nickname: action.payload.nickname,
         ws: action.payload.ws,
-        waiting: true,
+        isPlayerTurn: false,
         isHost: true
       };
     case JOIN_ROOM:
@@ -44,7 +43,7 @@ export default function GameReducer(
         opponent: action.payload.opponent,
         nickname: action.payload.nickname,
         ws: action.payload.ws,
-        waiting: true,
+        isPlayerTurn: false,
         isHost: false
       };
     case LEAVE_ROOM:
@@ -58,23 +57,24 @@ export default function GameReducer(
         rooms: [...action.payload.rooms],
       };
     case PLAYER_JOINED:
-      console.log('player joined reducer')
       return {
         ...state,
         opponent: action.payload,
-        waiting: false
+        isPlayerTurn: true
       };
     case PLAYER_LEFT:
       return {
         ...state,
-        opponent: null
+        opponent: null,
+        isHost: true,
+        isPlayerTurn: false,
       }
 
-    case START_TURN:
-    case MOVE:
+
+    case SET_TURN:
       return {
         ...state,
-        waiting: action.payload
+        isPlayerTurn: action.payload
       }
 
 

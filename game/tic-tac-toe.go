@@ -1,9 +1,6 @@
 package game
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/gofrs/uuid"
 	"github.com/renato-macedo/socket-tic-tac-toe/messages"
 )
@@ -26,7 +23,7 @@ func CreateGame(host *Player) string {
 	game := &Game{ID: id, Host: host}
 	Games[game.ID] = game
 	host.Game = game
-	log.Println("game created:", game.ID)
+
 	return game.ID
 }
 
@@ -40,7 +37,7 @@ func JoinGame(gameID string, guest *Player) (success bool) {
 		guest.Game = gameroom
 		return true
 	}
-	log.Println("room is full or do not exist")
+
 	return false
 
 }
@@ -58,7 +55,7 @@ func Get() []messages.Room {
 			if value.Guest != nil {
 				numberOfPlayers++
 			}
-			fmt.Println(key, value)
+
 			rooms = append(rooms, messages.Room{ID: key, Title: host + "'s game", NumberOfPlayers: numberOfPlayers})
 		}
 	}

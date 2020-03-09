@@ -8,7 +8,7 @@ const GameContext = createContext<GameContextInterface>({
   opponent: null,
   nickname: '',
   error: '',
-  waiting: false,
+  isPlayerTurn: false,
   isHost: false,
   joinRoom: () => { },
   leaveRoom: () => { },
@@ -17,7 +17,7 @@ const GameContext = createContext<GameContextInterface>({
   removePlayer: () => { },
   newPlayer: () => { },
   makeAMove: () => { },
-  startTurn: () => { },
+  setTurn: () => { },
   ws: null,
 });
 

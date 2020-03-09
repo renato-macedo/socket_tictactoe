@@ -1,7 +1,7 @@
 package game
 
 // CalculateWinner tells who won the game
-func (g *Game) calculateWinner(index int, XO string) (hasWinner bool, draw bool, winner string) {
+func (g *Game) calculateWinner(index int, XO string) (hasWinner bool, draw bool, winner string, sqr [3]int) {
 
 	g.SQUARES[index] = XO
 
@@ -22,11 +22,12 @@ func (g *Game) calculateWinner(index int, XO string) (hasWinner bool, draw bool,
 		c := value[2]
 		// log.Printf("%v: %v %v: %v %v: %v", a, g.SQUARES[a], b, g.SQUARES[b], c, g.SQUARES[c])
 		if g.SQUARES[a] != "" && g.SQUARES[a] == g.SQUARES[b] && g.SQUARES[a] == g.SQUARES[c] {
-			return true, false, g.SQUARES[a]
+
+			return true, false, g.SQUARES[a], [3]int{a, b, c}
 		}
 	}
 
-	return false, g.checkDraw(), ""
+	return false, g.checkDraw(), "", [3]int{}
 }
 
 func (g *Game) checkDraw() bool {

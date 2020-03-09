@@ -29,7 +29,7 @@ func NewPlayer(conn *websocket.Conn) *Player {
 
 // Reader receive and send messages
 func (p *Player) Reader() {
-	log.Println("starting to read")
+
 	// close the connection after
 	defer func() {
 		p.Conn.Close()
@@ -43,7 +43,7 @@ func (p *Player) Reader() {
 		message := map[string]string{}
 
 		err := p.Conn.ReadJSON(&message)
-		log.Println(err)
+		// log.Println(err)
 		if err != nil {
 			if p.Game != nil {
 
@@ -91,6 +91,10 @@ func (p *Player) Reader() {
 			player := message["player"]
 			onMove(p, index, player)
 			break
+		case messages.RESTART:
+			onRestart(p)
+			break
+
 		}
 
 	}

@@ -2,15 +2,12 @@ import React, { createContext, useReducer, PropsWithChildren } from 'react';
 import {
   GameStateInterface,
   Room,
-  SET_CURRENT_ROOM,
   JOIN_ROOM,
   CREATE_ROOM,
   GET_ROOMS,
-  GameContextInterface,
   PLAYER_JOINED,
   PLAYER_LEFT,
-  MOVE,
-  START_TURN,
+  SET_TURN
 
 } from '../types';
 import GameReducer from './GameReducer';
@@ -24,7 +21,7 @@ function GameState(props: any) {
     rooms: [],
     nickname: '',
     error: '',
-    waiting: false,
+    isPlayerTurn: false,
     isHost: false,
     currentRoom: null,
     opponent: null,
@@ -105,18 +102,15 @@ function GameState(props: any) {
 
   function makeAMove(square: number, player: string) {
     if (state.ws) {
-      dispatch({
-        type: MOVE,
-        payload: true // set waiting true
-      })
+      setTurn(false)
       state.ws.send(JSON.stringify({ type: 'move', square: square.toString(), player }))
     }
   }
 
-  function startTurn() {
+  function setTurn(isPlayerTurn: boolean) {
     dispatch({
-      type: START_TURN,
-      payload: false // set waiting false
+      type: SET_TURN,
+      payload: isPlayerTurn
     })
   }
 
@@ -145,14 +139,14 @@ function GameState(props: any) {
         leaveRoom,
         getRooms,
         newPlayer,
-        waiting: state.waiting,
+        isPlayerTurn: state.isPlayerTurn,
         error: state.error,
         ws: state.ws,
         opponent: state.opponent,
         removePlayer,
         isHost: state.isHost,
         makeAMove,
-        startTurn
+        setTurn
       }}>
       {props.children}
     </GameContext.Provider>

@@ -34,11 +34,12 @@ func WsController(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
+		fmt.Fprintf(w, "It was not possible use WebSocket")
+		return
 	}
 
 	client := game.NewPlayer(ws)
 
-	//go client.Writer()
 	go client.Reader()
 }
 
@@ -50,7 +51,7 @@ func HTTPController(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		rooms := game.Get()
-		fmt.Println("rooms: ", rooms)
+
 		jsResp, err := json.Marshal(rooms)
 		if err != nil {
 			panic(err)
@@ -74,7 +75,7 @@ func Aux(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		rooms := game.Aux()
-		fmt.Println("rooms: ", rooms)
+
 		jsResp, err := json.Marshal(rooms)
 		if err != nil {
 			panic(err)

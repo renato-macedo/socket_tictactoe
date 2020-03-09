@@ -2,51 +2,19 @@ import React, { useState, useEffect, useContext, useReducer, Reducer } from 'rea
 import GameContext from '../context/GameContext';
 import Square from './Square';
 import Button from '@material-ui/core/Button';
+import { BoardState, initReducer } from './BoardReducer'
 
 
-interface BoardState {
-  squares: Array<string>;
-  Next: string
-}
-interface Action {
-  type: string;
-  payload: any
-}
+const initialState: BoardState = { squares: Array(9).fill(''), Next: 'X', winner: '', end: false, status: '', highlighted: [] }
 
-const initialState = { squares: Array(9).fill(''), Next: 'X' }
+const reducer = initReducer(initialState)
 
-const reducer: Reducer<BoardState, Action> = (state: BoardState, action: Action): BoardState => {
-  switch (action.type) {
-    case "PLAYER_MOVE":
-      return {
-        Next: action.payload.Next,
-        squares: action.payload.squares
-      }
-    case "OP_MOVE":
-      console.log({ payload: action.payload })
-      const sqrs = state.squares.slice()
-      sqrs[action.payload.position] = action.payload.player
-      return {
-        ...state,
-        squares: sqrs
-      };
-    case 'RESET':
-      return initialState
-    default:
 
-      return state
-  }
-}
-
-export default function Board() {
-  const { waiting, makeAMove, isHost, ws, startTurn, } = useContext(GameContext)
+export default function Board({ setAlert }: { setAlert: (alert: string) => void }) {
+  const { isPlayerTurn, makeAMove, isHost, ws, setTurn, newPlayer, removePlayer, opponent, nickname } = useContext(GameContext)
 
 
   const [state, dispatch] = useReducer(reducer, initialState)
-
-  const [status, setStatus] = useState('')
-  const [winner, setWinner] = useState('')
-  const [end, setEnd] = useState(false)
 
   function handleClick(i: number) {
     const sqr = state.squares.slice();
@@ -54,10 +22,9 @@ export default function Board() {
     if the player is not waiting and there is no winner and
     the square is empty 
     */
-    if (!waiting && !winner && sqr[i] == "") {
-      const player = isHost ? 'X' : 'O'
+    if (isPlayerTurn && !state.winner && sqr[i] == "") {
 
-      console.log(player, "is making a move")
+      const player = isHost ? 'X' : 'O'
 
       makeAMove(i, player)
 
@@ -66,20 +33,35 @@ export default function Board() {
       dispatch({
         type: 'PLAYER_MOVE',
         payload: {
-          Next: !isHost ? 'X' : 'O', squares: sqr
+          Next: isHost ? 'O' : 'X', squares: sqr
         }
       })
-
     }
 
   }
 
   function renderSquare(i: number) {
+    if (state.highlighted.includes(i)) {
+      const { winner } = state
+      let color: string
+      if (winner == "X" && isHost) {
+        color = "#28a745"
+      } else if (winner == "O" && isHost) {
+        color = "#dc3545"
+      } else if (winner == "X" && !isHost) {
+        color = "#dc3545"
+      } else { // winner == "O" && !isHost
+        color = "#28a745"
+      }
+      return <Square color={color} value={state.squares[i]} onClick={() => handleClick(i)} />;
+    }
     return <Square value={state.squares[i]} onClick={() => handleClick(i)} />;
+
+
   }
 
-  function reset() {
-    ws?.send(JSON.stringify({ type: "reset" }))
+  function restart() {
+    ws?.send(JSON.stringify({ type: "restart" }))
   }
 
   useEffect(() => {
@@ -93,21 +75,40 @@ export default function Board() {
           case 'move':
             dispatch({
               type: 'OP_MOVE',
-              payload: { position: data, player }
+              payload: { position: data, player, Next: !isHost ? 'O' : 'X' }
             })
-            startTurn()
+            setTurn(true)
             break;
           case 'gameover':
-            setWinner(data)
-            setEnd(true)
+            dispatch({
+              type: "GAME_OVER",
+              payload: { winner: player, highlighted: data }
+            })
             break
           case 'draw':
-            setStatus('Draw')
-            setEnd(true)
-            break
-          case 'reset':
             dispatch({
-              type: 'RESET',
+              type: 'DRAW',
+              payload: null
+            })
+            break
+          case 'restart':
+            isHost ? setTurn(true) : setTurn(false)
+            dispatch({
+              type: 'RESTART',
+              payload: null
+            })
+            break
+          case 'newplayer':
+            newPlayer(data);
+            setAlert('New Player joined the room');
+            break;
+          case 'gs_left':
+          case 'hs_left':
+            removePlayer()
+            setAlert(data)
+            restart()
+            dispatch({
+              type: 'RESTART',
               payload: null
             })
             break
@@ -117,21 +118,19 @@ export default function Board() {
   }, [])
 
   useEffect(() => {
-    if (winner) {
-      //status =
-      setStatus('Winner: ' + winner)
-    } else {
-      console.log(state.Next)
-      setStatus('Next player: ' + (state.Next))
-    }
+    console.log(isPlayerTurn)
+    dispatch({
+      type: "UPDATE_STATUS",
+      payload: state.winner ? `Winner: ${state.winner}` : `Next player: ${state.Next}`,
+    })
 
-  }, [winner]);
+  }, [state.winner, isPlayerTurn]);
 
 
   return (
     <div className="game">
       <div className="board">
-        <div className="status">{status}</div>
+        <div className="status">{state.status}</div>
         <div className="board-row">
           {renderSquare(0)}
           {renderSquare(1)}
@@ -148,7 +147,7 @@ export default function Board() {
           {renderSquare(8)}
         </div>
       </div>
-      {isHost && <Button variant="contained" disabled={!end} color="secondary" onClick={reset}>
+      {isHost && <Button variant="contained" disabled={!state.end} color="secondary" onClick={restart}>
         Restart Game
       </Button>}
     </div>

@@ -15,13 +15,11 @@ func onJoin(p *Player, nickname, roomID string) {
 	if success == true {
 
 		opponent := Games[roomID].Host
-
 		// tell the guest who is the host
 		p.Game.notifyGuest(messages.JOINED, opponent.Nickname)
-		//p.Conn.WriteJSON(messages.Default{Type: messages.JOINED, Data: opponent.Nickname})
+
 		// tell the host that a player joined the game
 		p.Game.notifyHost(messages.NEW_PLAYER, p.Nickname)
-		//opponent.Conn.WriteJSON(messages.Default{Type: messages.NEW_PLAYER, Data: p.Nickname})
 	}
 }
 
@@ -40,11 +38,26 @@ func onMove(p *Player, index int, playerType string) {
 		p.Game.Host.Conn.WriteJSON(messages.Move{Type: messages.MOVE, Position: index, Player: playerType})
 	}
 
-	hasWinner, draw, winner := p.Game.calculateWinner(index, playerType)
+	hasWinner, draw, winner, sqr := p.Game.calculateWinner(index, playerType)
 
 	if draw {
 		p.Game.notifyAll(messages.DRAW, "")
 	} else if hasWinner {
-		p.Game.notifyAll(messages.GAME_OVER, winner)
+		p.Game.Host.Conn.WriteJSON(messages.GameOver{Type: messages.GAME_OVER, Player: winner, Squares: sqr})
+		p.Game.Guest.Conn.WriteJSON(messages.GameOver{Type: messages.GAME_OVER, Player: winner, Squares: sqr})
+
+	}
+}
+
+func onRestart(p *Player) {
+	var squares [9]string
+	p.Game.SQUARES = squares
+
+	if p.Game.Guest != nil {
+		p.Game.notifyGuest("restart", "")
+	}
+
+	if p.Game.Host != nil {
+		p.Game.notifyHost("restart", "")
 	}
 }

@@ -26,6 +26,13 @@ type Move struct {
 	Position int    `json:"data"`
 }
 
+// GameOver message
+type GameOver struct {
+	Type    string `json:"type"`
+	Player  string `json:"player"`
+	Squares [3]int `json:"data"`
+}
+
 // Room data transfer object
 type Room struct {
 	ID              string `json:"id"`
@@ -66,4 +73,7 @@ const (
 
 	// GAME_OVER game over
 	GAME_OVER = "gameover"
+
+	// RESTART game
+	RESTART = "restart"
 )
