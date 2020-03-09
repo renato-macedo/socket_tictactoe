@@ -33,7 +33,8 @@ export default function FormDialog({
     setText(event.target.value);
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.preventDefault()
     if (text) {
       setError(false);
       handleJoin(text);
@@ -50,30 +51,34 @@ export default function FormDialog({
         onClose={handleClose}
         aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Join {roomTitle}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Before join the Room please type a nickname
+        <form onSubmit={handleClick}>
+          <DialogContent>
+            <DialogContentText>
+              Before join the Room please type a nickname
           </DialogContentText>
-          <TextField
-            error={error}
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Nickname"
-            type="text"
-            fullWidth
-            onChange={handleChange}
-            helperText={error ? 'Nickname must be empty' : null}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
+
+            <TextField
+              autoComplete="off"
+              error={error}
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Nickname"
+              type="text"
+              fullWidth
+              onChange={handleChange}
+              helperText={error ? 'Nickname must be empty' : null}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
           </Button>
-          <Button onClick={handleClick} color="primary">
-            Join Room
+            <Button type="submit" color="primary">
+              Join Room
           </Button>
-        </DialogActions>
+          </DialogActions>
+        </form>
       </Dialog>
     </div>
   );
