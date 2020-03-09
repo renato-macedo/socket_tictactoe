@@ -11,7 +11,7 @@ function App() {
     <Paper
       style={{
         width: '80vw',
-        height: '80vh',
+        height: '90vh',
         margin: '0 auto',
         padding: '2% 5%',
       }}

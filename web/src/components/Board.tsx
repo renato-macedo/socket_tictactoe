@@ -1,7 +1,9 @@
-import React, { useState, PropsWithChildren, useEffect, useContext, useReducer, Reducer } from 'react';
+import React, { useState, useEffect, useContext, useReducer, Reducer } from 'react';
 import GameContext from '../context/GameContext';
-
+import Square from './Square';
 import Button from '@material-ui/core/Button';
+
+
 interface BoardState {
   squares: Array<string>;
   Next: string
@@ -12,6 +14,7 @@ interface Action {
 }
 
 const initialState = { squares: Array(9).fill(''), Next: 'X' }
+
 const reducer: Reducer<BoardState, Action> = (state: BoardState, action: Action): BoardState => {
   switch (action.type) {
     case "PLAYER_MOVE":
@@ -35,7 +38,7 @@ const reducer: Reducer<BoardState, Action> = (state: BoardState, action: Action)
   }
 }
 
-export default function Board(props: any) {
+export default function Board() {
   const { waiting, makeAMove, isHost, ws, startTurn, } = useContext(GameContext)
 
 
@@ -46,10 +49,6 @@ export default function Board(props: any) {
   const [end, setEnd] = useState(false)
 
   function handleClick(i: number) {
-    // if (calculateWinner(sqr) || sqr[i]) {
-    //   return;
-    // }
-
     const sqr = state.squares.slice();
     /*
     if the player is not waiting and there is no winner and
@@ -70,7 +69,7 @@ export default function Board(props: any) {
           Next: !isHost ? 'X' : 'O', squares: sqr
         }
       })
-      //setState({ Next: !isHost ? 'X' : 'O', squares: sqr })
+
     }
 
   }
@@ -112,8 +111,6 @@ export default function Board(props: any) {
               payload: null
             })
             break
-          default:
-            break;
         }
       })
     }
@@ -133,23 +130,24 @@ export default function Board(props: any) {
 
   return (
     <div className="game">
-      <div className="status">{status}</div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+      <div className="board">
+        <div className="status">{status}</div>
+        <div className="board-row">
+          {renderSquare(0)}
+          {renderSquare(1)}
+          {renderSquare(2)}
+        </div>
+        <div className="board-row">
+          {renderSquare(3)}
+          {renderSquare(4)}
+          {renderSquare(5)}
+        </div>
+        <div className="board-row">
+          {renderSquare(6)}
+          {renderSquare(7)}
+          {renderSquare(8)}
+        </div>
       </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
-      </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
-
       {isHost && <Button variant="contained" disabled={!end} color="secondary" onClick={reset}>
         Restart Game
       </Button>}
@@ -157,12 +155,3 @@ export default function Board(props: any) {
   );
 }
 
-function Square(
-  props: PropsWithChildren<{ value: string; onClick: () => void }>,
-) {
-  return (
-    <button className="square" onClick={props.onClick}>
-      {props.value}
-    </button>
-  );
-}
