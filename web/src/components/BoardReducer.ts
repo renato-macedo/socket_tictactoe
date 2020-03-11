@@ -26,7 +26,7 @@ export function initReducer(initialState: BoardState) {
           squares: action.payload.squares
         }
       case "OP_MOVE":
-        console.log({ payload: action.payload })
+
         const sqrs = state.squares.slice()
         sqrs[action.payload.position] = action.payload.player
         return {

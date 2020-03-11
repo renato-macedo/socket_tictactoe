@@ -54,9 +54,8 @@ function GameState(props: any) {
     const ws = new WebSocket(process.env.WS_URL);
 
     // tell the server that the player wants to join a room
-    ws.onopen = event => {
-      console.log('connected');
-      console.log({ id: room.id });
+    ws.onopen = (event: Event) => {
+
       ws.send(
         JSON.stringify({
           type: 'join',
@@ -124,7 +123,7 @@ function GameState(props: any) {
     });
   }
 
-  function leaveRoom() {}
+  function leaveRoom() { }
 
   return (
     <GameContext.Provider

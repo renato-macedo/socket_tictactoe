@@ -21,6 +21,4 @@ func initRoutes() {
 	http.HandleFunc("/ws", controllers.WsController)
 	http.HandleFunc("/rooms", controllers.HTTPController)
 
-	// delete later
-	http.HandleFunc("/aux", controllers.Aux)
 }

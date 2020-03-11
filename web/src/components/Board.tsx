@@ -68,7 +68,7 @@ export default function Board({ setAlert }: { setAlert: (alert: string) => void 
     if (ws) {
       ws.addEventListener('message', event => {
         const message = JSON.parse(event.data);
-        console.log({ message })
+
         const { type, data, player } = message
 
         switch (type) {
@@ -118,7 +118,7 @@ export default function Board({ setAlert }: { setAlert: (alert: string) => void 
   }, [])
 
   useEffect(() => {
-    console.log(isPlayerTurn)
+
     dispatch({
       type: "UPDATE_STATUS",
       payload: state.winner ? `Winner: ${state.winner}` : `Next player: ${state.Next}`,
