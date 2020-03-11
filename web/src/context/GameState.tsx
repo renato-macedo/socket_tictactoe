@@ -7,8 +7,7 @@ import {
   GET_ROOMS,
   PLAYER_JOINED,
   PLAYER_LEFT,
-  SET_TURN
-
+  SET_TURN,
 } from '../types';
 import GameReducer from './GameReducer';
 import GameContext from './GameContext';
@@ -31,11 +30,10 @@ function GameState(props: any) {
   const [state, dispatch] = useReducer(GameReducer, initialState);
 
   function createRoom(nickname: string) {
-    const ws = new WebSocket('ws://localhost:3000/ws');
+    const ws = new WebSocket(process.env.WS_URL); // ws://localhost:3000/ws
 
     // tell the server to create a room
-    ws.onopen = event => {
-
+    ws.onopen = (event: MessageEvent) => {
       ws.send(JSON.stringify({ type: 'create', nickname }));
     };
 
@@ -44,7 +42,6 @@ function GameState(props: any) {
       const { type, data } = JSON.parse(event.data);
 
       if (type === 'created') {
-
         dispatch({
           type: CREATE_ROOM,
           payload: { room: { id: data, players: 1 }, nickname, ws },
@@ -54,12 +51,12 @@ function GameState(props: any) {
   }
 
   function joinRoom(nickname: string, room: Room) {
-    const ws = new WebSocket('ws://localhost:3000/ws');
+    const ws = new WebSocket(process.env.WS_URL);
 
     // tell the server that the player wants to join a room
     ws.onopen = event => {
       console.log('connected');
-      console.log({ id: room.id })
+      console.log({ id: room.id });
       ws.send(
         JSON.stringify({
           type: 'join',
@@ -96,26 +93,28 @@ function GameState(props: any) {
   function removePlayer() {
     dispatch({
       type: PLAYER_LEFT,
-      payload: null
-    })
+      payload: null,
+    });
   }
 
   function makeAMove(square: number, player: string) {
     if (state.ws) {
-      setTurn(false)
-      state.ws.send(JSON.stringify({ type: 'move', square: square.toString(), player }))
+      setTurn(false);
+      state.ws.send(
+        JSON.stringify({ type: 'move', square: square.toString(), player }),
+      );
     }
   }
 
   function setTurn(isPlayerTurn: boolean) {
     dispatch({
       type: SET_TURN,
-      payload: isPlayerTurn
-    })
+      payload: isPlayerTurn,
+    });
   }
 
   async function getRooms() {
-    const response = await fetch('http://localhost:3000/rooms');
+    const response = await fetch(process.env.API_URL);
 
     const data: Array<Room> = await response.json();
 
@@ -125,7 +124,7 @@ function GameState(props: any) {
     });
   }
 
-  function leaveRoom() { }
+  function leaveRoom() {}
 
   return (
     <GameContext.Provider
@@ -146,7 +145,7 @@ function GameState(props: any) {
         removePlayer,
         isHost: state.isHost,
         makeAMove,
-        setTurn
+        setTurn,
       }}>
       {props.children}
     </GameContext.Provider>
